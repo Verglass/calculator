@@ -31,7 +31,7 @@ class Calculator extends React.Component {
       });
     } else {
       this.setState({
-        currentNumber: (this.state.currentNumber*10 + i),
+        currentNumber: (this.state.currentNumber * 10 + i),
       });
     }
   }
@@ -51,28 +51,28 @@ class Calculator extends React.Component {
           currentNumber: this.state.previousNumber + this.state.currentNumber,
           previousNumber: 0,
           currentOperation: null,
-          isStatic: false,
+          isStatic: true,
         });
       } else if (this.state.currentOperation === "-") {
         this.setState({
           currentNumber: this.state.previousNumber - this.state.currentNumber,
           previousNumber: 0,
           currentOperation: null,
-          isStatic: false,
+          isStatic: true,
         });
       } else if (this.state.currentOperation === "*") {
         this.setState({
           currentNumber: this.state.previousNumber * this.state.currentNumber,
           previousNumber: 0,
           currentOperation: null,
-          isStatic: false,
+          isStatic: true,
         });
       } else if (this.state.currentOperation === "/") {
         this.setState({
           currentNumber: this.state.previousNumber / this.state.currentNumber,
           previousNumber: 0,
           currentOperation: null,
-          isStatic: false,
+          isStatic: true,
         });
       }
     }
@@ -87,7 +87,7 @@ class Calculator extends React.Component {
       this.operation(i);
     }
   }
-  
+
   renderBtn(i) {
     return (
       <Button value={i} onClick={() => this.handleClick(i)} />
