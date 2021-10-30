@@ -18,6 +18,8 @@ class Calculator extends React.Component {
     this.state = {
       currentNumber: 0,
       previousNumber: 0,
+      currentDecimal: 0,
+      previousDecimal: 0,
       currentOperation: null,
       isStatic: true,
     };
@@ -27,60 +29,125 @@ class Calculator extends React.Component {
     if (this.state.isStatic) {
       this.setState({
         currentNumber: i,
+        currentDecimal: 0,
         isStatic: false,
+      });
+    } else if (this.state.currentDecimal !== 0) {
+      this.setState({
+        currentNumber: (this.state.currentNumber * 10) + i,
+        currentDecimal: this.state.currentDecimal + 1,
       });
     } else {
       this.setState({
-        currentNumber: (this.state.currentNumber * 10 + i),
+        currentNumber: (this.state.currentNumber * 10) + i,
       });
+    }
+  }
+
+  decimal() {
+    if (this.state.currentDecimal === 0) {
+      if (this.state.isStatic) {
+        this.setState({
+          currentNumber: 0,
+          currentDecimal: 1,
+          isStatic: false,
+        });
+      } else {
+        this.setState({
+          currentDecimal: 1,
+        });
+      }
     }
   }
 
   operation(i) {
     this.setState({
       previousNumber: this.state.currentNumber,
+      previousDecimal: this.state.currentDecimal,
       currentOperation: i,
       isStatic: true,
     });
   }
 
+  add(i) {
+    if (this.state.previousDecimal === 0 && this.state.currentDecimal === 0) {
+      this.setState({
+        currentNumber: this.state.previousNumber + this.state.currentNumber * i,
+      });
+    } else if (this.state.previousDecimal === 0 && this.state.currentDecimal > 1) {
+      this.setState({
+        currentNumber: this.state.previousNumber * (10 ** (this.state.currentDecimal - 1)) + this.state.currentNumber * i,
+      });
+    } else if (this.state.currentDecimal === 0 && this.state.previousDecimal > 1) {
+      this.setState({
+        currentNumber: this.state.previousNumber + this.state.currentNumber * (10 ** (this.state.previousDecimal - 1)) * i,
+        currentDecimal: this.state.previousDecimal,
+      });
+    } else {
+      let diff = this.state.previousDecimal - this.state.currentDecimal;
+
+      if (diff > 0) {
+        this.setState({
+          currentNumber: this.state.previousNumber + this.state.currentNumber * (10 ** diff) * i,
+          currentDecimal: this.state.previousDecimal,
+        });
+      } else {
+        this.setState({
+          currentNumber: this.state.previousNumber * (10 ** Math.abs(diff)) + this.state.currentNumber * i,
+        });
+      }
+    }
+  }
+
+  multiply() {
+    this.setState({
+      currentNumber: this.state.previousNumber * this.state.currentNumber,
+      currentDecimal: this.state.previousDecimal + this.state.currentDecimal,
+    });
+  }
+
+  divide() {
+    let diff = this.state.currentDecimal - this.state.previousDecimal;
+
+    if (diff > 0) {
+      this.setState({
+        currentNumber: (this.state.previousNumber / this.state.currentNumber) * (10 ** (diff - 1)),
+        currentDecimal: 0,
+      });
+    } else {
+      this.setState({
+        currentNumber: this.state.previousNumber / this.state.currentNumber,
+        currentDecimal: Math.abs(diff),
+      });
+    }
+  }
+
   sum() {
     if (this.state.currentOperation) {
       if (this.state.currentOperation === "+") {
-        this.setState({
-          currentNumber: this.state.previousNumber + this.state.currentNumber,
-          previousNumber: 0,
-          currentOperation: null,
-          isStatic: true,
-        });
+        this.add(1);
       } else if (this.state.currentOperation === "-") {
-        this.setState({
-          currentNumber: this.state.previousNumber - this.state.currentNumber,
-          previousNumber: 0,
-          currentOperation: null,
-          isStatic: true,
-        });
+        this.add(-1);
       } else if (this.state.currentOperation === "*") {
-        this.setState({
-          currentNumber: this.state.previousNumber * this.state.currentNumber,
-          previousNumber: 0,
-          currentOperation: null,
-          isStatic: true,
-        });
+        this.multiply();
       } else if (this.state.currentOperation === "/") {
-        this.setState({
-          currentNumber: this.state.previousNumber / this.state.currentNumber,
-          previousNumber: 0,
-          currentOperation: null,
-          isStatic: true,
-        });
+        this.divide();
       }
+
+      this.setState({
+        previousNumber: 0,
+        previousDecimal: 0,
+        currentOperation: null,
+        isStatic: true,
+      });
     }
   }
 
   handleClick(i) {
     if (i === "=") {
       this.sum();
+    } else if (i === ".") {
+      this.decimal();
     } else if (Number.isInteger(i)) {
       this.updateNumber(i);
     } else {
@@ -95,10 +162,29 @@ class Calculator extends React.Component {
   }
 
   render() {
+    let currentNumber = this.state.currentNumber;
+    let previousNumber = this.state.previousNumber;
+
+    if (this.state.currentDecimal > 0) {
+      currentNumber = currentNumber / (10 ** (this.state.currentDecimal - 1));
+
+      if (currentNumber === 0) {
+        currentNumber = currentNumber.toFixed(this.state.currentDecimal)
+      }
+    }
+
+    if (this.state.previousDecimal > 0) {
+      previousNumber = previousNumber / (10 ** (this.state.previousDecimal - 1));
+
+      if (previousNumber === 0) {
+        previousNumber = previousNumber.toFixed(this.state.currentDecimal)
+      }
+    }
+
     return (
       <div>
-        <small>{this.state.previousNumber}</small>
-        <h1>{this.state.currentNumber}</h1>
+        <small>{previousNumber}</small>
+        <h1>{currentNumber}</h1>
         <div>
           {this.renderBtn(1)}
           {this.renderBtn(2)}
@@ -118,8 +204,9 @@ class Calculator extends React.Component {
           {this.renderBtn("*")}
         </div>
         <div>
-          {this.renderBtn(0)}
           {this.renderBtn("=")}
+          {this.renderBtn(0)}
+          {this.renderBtn(".")}
           {this.renderBtn("/")}
         </div>
       </div>
