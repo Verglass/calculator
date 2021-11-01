@@ -17,7 +17,7 @@ class Calculator extends React.Component {
     super(props);
     this.state = {
       currentNumber: 0,
-      previousNumber: 0,
+      previousNumber: null,
       currentDecimal: 0,
       previousDecimal: 0,
       currentOperation: null,
@@ -143,6 +143,17 @@ class Calculator extends React.Component {
     }
   }
 
+  clear() {
+    this.setState({
+      currentNumber: 0,
+      previousNumber: null,
+      currentDecimal: 0,
+      previousDecimal: 0,
+      currentOperation: null,
+      isStatic: true,
+    });
+  }
+
   handleClick(i) {
     if (i === "=") {
       this.sum();
@@ -164,6 +175,7 @@ class Calculator extends React.Component {
   render() {
     let currentNumber = this.state.currentNumber;
     let previousNumber = this.state.previousNumber;
+    let previousNumberStatus = null;
 
     if (this.state.currentDecimal > 0) {
       currentNumber = currentNumber / (10 ** (this.state.currentDecimal - 1));
@@ -173,18 +185,20 @@ class Calculator extends React.Component {
       }
     }
 
+    if (previousNumber === null) {
+      previousNumberStatus = "hidden";
+    }
+
     if (this.state.previousDecimal > 0) {
       previousNumber = previousNumber / (10 ** (this.state.previousDecimal - 1));
-
-      if (previousNumber === 0) {
-        previousNumber = previousNumber.toFixed(this.state.currentDecimal)
-      }
     }
 
     return (
-      <div>
-        <small>{previousNumber}</small>
-        <h1>{currentNumber}</h1>
+      <div className="calculator">
+        <button className="calc-display" onClick={() => this.clear()}>
+          <small className={previousNumberStatus}>{previousNumber + this.state.currentOperation}</small>
+          <h1>{currentNumber}</h1>
+        </button>
         <div>
           {this.renderBtn(1)}
           {this.renderBtn(2)}
